@@ -1,61 +1,101 @@
 product_key,product_id,product_name,category,unit_cost
-091b5b2306f4,PROD-0000,Universal explicit migration,Home & Garden,409.21
-0dd77115c4f3,PROD-0001,Triple-buffered encompassing instruction set,Sporting Goods,178.08
-1a4342d78389,PROD-0002,Polarized methodical encryption,Home & Garden,115.35
-459ae78ee6d3,PROD-0003,Persevering neutral circuit,Home & Garden,202.24
-8a0b6d17b12e,PROD-0004,Networked content-based policy,Apparel,432.85
-6e3433aaf26b,PROD-0005,Profound value-added challenge,Apparel,178.82
-726cea0fee93,PROD-0006,Cloned even-keeled throughput,Office Supplies,202.84
-fe88323aa47c,PROD-0007,Operative global toolset,Office Supplies,168.92
-90bb7006a461,PROD-0008,Profit-focused encompassing ability,Electronics,62.09
-34d8515f8fff,PROD-0009,Horizontal uniform framework,Apparel,93.39
-791de21059e1,PROD-0010,Reverse-engineered optimal protocol,Apparel,23.94
-348b9da2ae8f,PROD-0011,Pre-emptive coherent knowledge user,Office Supplies,220.11
-ace6f1af0777,PROD-0012,Public-key mission-critical hardware,Apparel,221.01
-c5de84a42dc7,PROD-0013,Managed neutral task-force,Office Supplies,62.24
-32ca003f13d5,PROD-0014,Quality-focused homogeneous knowledgebase,Office Supplies,99.09
-e8c7cab22da2,PROD-0015,Inverse content-based standardization,Electronics,355.85
-0f83205e3d33,PROD-0016,Front-line object-oriented info-mediaries,Electronics,262.36
-c8def53aa5e1,PROD-0017,Focused zero-defect installation,Office Supplies,344.99
-3da8eef4fef2,PROD-0018,Balanced foreground synergy,Home & Garden,185.29
-43732b545005,PROD-0019,Phased tertiary workforce,Electronics,474.69
-0368fe938df0,PROD-0020,Multi-tiered human-resource protocol,Apparel,313.46
-3a56db8703f1,PROD-0021,Streamlined coherent methodology,Electronics,361.28
-b4671d06768a,PROD-0022,Automated clear-thinking middleware,Apparel,256.03
-d96541af0a6a,PROD-0023,Reverse-engineered full-range attitude,Sporting Goods,166.46
-2565587639ac,PROD-0024,Organic bandwidth-monitored moderator,Apparel,279.43
-2dd08ca9a60e,PROD-0025,Persevering 24/7 success,Home & Garden,213.12
-f12aa4e8831a,PROD-0026,Digitized incremental projection,Sporting Goods,340.27
-2229196545d7,PROD-0027,Distributed asynchronous leverage,Home & Garden,309.68
-ff1611f630b9,PROD-0028,Fundamental global process improvement,Apparel,206.01
-5c67ff91b651,PROD-0029,Team-oriented hybrid projection,Electronics,155.42
-e5b0897fe847,PROD-0030,Configurable full-range service-desk,Home & Garden,217.79
-c1ec1f84d61b,PROD-0031,Public-key homogeneous functionalities,Office Supplies,305.3
-9dfb688e46f3,PROD-0032,Self-enabling transitional task-force,Apparel,235.17
-009da4c25139,PROD-0033,Pre-emptive needs-based alliance,Sporting Goods,339.44
-d7f53e733ed8,PROD-0034,Secured asymmetric encoding,Office Supplies,239.23
-49ba8e93926a,PROD-0035,Self-enabling systemic forecast,Home & Garden,331.13
-c38a7bcf3a53,PROD-0036,Focused value-added array,Apparel,260.15
-8d4b91272e30,PROD-0037,Optional bandwidth-monitored task-force,Office Supplies,170.92
-1a6d32022bb8,PROD-0038,Sharable tertiary attitude,Home & Garden,338.03
-520c845dde88,PROD-0039,Organic composite solution,Home & Garden,404.25
-27277b752d50,PROD-0040,Innovative 4thgeneration analyzer,Home & Garden,17.09
-a5c6a1018b87,PROD-0041,Inverse analyzing frame,Home & Garden,492.05
-65179f62f1ab,PROD-0042,Multi-channeled holistic Internet solution,Office Supplies,425.62
-78846e412796,PROD-0043,Digitized dynamic moderator,Electronics,230.43
-ea01d2f0c612,PROD-0044,Open-source non-volatile software,Office Supplies,101.25
-999481f026b2,PROD-0045,Enterprise-wide composite conglomeration,Sporting Goods,249.72
-1338b20b0557,PROD-0046,Configurable reciprocal implementation,Home & Garden,78.05
-5dae24f1c6b7,PROD-0047,Secured systemic encoding,Electronics,446.87
-5da6f21ae473,PROD-0048,Proactive optimal circuit,Electronics,390.32
-79f6d802ad89,PROD-0049,Focused maximized productivity,Home & Garden,92.06
-5ac038e72743,PROD-0050,Function-based logistical extranet,Office Supplies,234.95
-e07b1801bfc0,PROD-0051,Synchronized 24/7 website,Office Supplies,128.35
-ecad9c574b3a,PROD-0052,Persistent executive service-desk,Electronics,230.95
-a28f10595545,PROD-0053,Quality-focused cohesive archive,Sporting Goods,335.45
-3b0e4cfdd3b3,PROD-0054,Organic grid-enabled parallelism,Office Supplies,299.75
-48dda018cffc,PROD-0055,Innovative scalable interface,Sporting Goods,308.26
-71421cc4a202,PROD-0056,Team-oriented eco-centric knowledgebase,Office Supplies,216.24
-6b95c48aaa47,PROD-0057,Innovative dedicated info-mediaries,Office Supplies,225.73
-256894ada995,PROD-0058,Polarized bi-directional encoding,Home & Garden,373.11
-dbd32c932e6d,PROD-0059,Multi-tiered object-oriented help-desk,Sporting Goods,227.78
+091b5b2306f4,PROD-0000,Reactive scalable parallelism,Apparel,331.91
+0dd77115c4f3,PROD-0001,Enterprise-wide zero administration capacity,Home & Garden,123.73
+1a4342d78389,PROD-0002,Optional motivating approach,Office Supplies,42.16
+459ae78ee6d3,PROD-0003,Decentralized multi-state collaboration,Electronics,207.22
+8a0b6d17b12e,PROD-0004,Innovative composite complexity,Office Supplies,237.61
+6e3433aaf26b,PROD-0005,Inverse tertiary definition,Electronics,119.58
+726cea0fee93,PROD-0006,Monitored multi-state forecast,Apparel,352.98
+fe88323aa47c,PROD-0007,Configurable eco-centric customer loyalty,Sporting Goods,40.23
+90bb7006a461,PROD-0008,Sharable neutral focus group,Home & Garden,462.34
+34d8515f8fff,PROD-0009,De-engineered responsive framework,Office Supplies,332.29
+791de21059e1,PROD-0010,Seamless national array,Home & Garden,215.44
+348b9da2ae8f,PROD-0011,Profit-focused secondary concept,Office Supplies,116.28
+ace6f1af0777,PROD-0012,Reverse-engineered optimal collaboration,Home & Garden,454.66
+c5de84a42dc7,PROD-0013,Down-sized stable process improvement,Home & Garden,40.35
+32ca003f13d5,PROD-0014,Up-sized real-time Graphical User Interface,Home & Garden,397.35
+e8c7cab22da2,PROD-0015,Re-contextualized 6thgeneration algorithm,Office Supplies,375.73
+0f83205e3d33,PROD-0016,Configurable 6thgeneration project,Office Supplies,460.99
+c8def53aa5e1,PROD-0017,Visionary object-oriented firmware,Sporting Goods,66.56
+3da8eef4fef2,PROD-0018,Streamlined demand-driven throughput,Apparel,351.37
+43732b545005,PROD-0019,Re-engineered intangible process improvement,Apparel,252.73
+0368fe938df0,PROD-0020,Sharable 4thgeneration methodology,Sporting Goods,221.69
+3a56db8703f1,PROD-0021,Self-enabling needs-based frame,Office Supplies,24.73
+b4671d06768a,PROD-0022,Stand-alone exuding matrices,Sporting Goods,368.59
+d96541af0a6a,PROD-0023,Fully-configurable systemic initiative,Office Supplies,128.93
+2565587639ac,PROD-0024,Innovative logistical archive,Electronics,118.32
+2dd08ca9a60e,PROD-0025,Team-oriented analyzing complexity,Office Supplies,295.63
+f12aa4e8831a,PROD-0026,Organic intangible matrices,Electronics,499.79
+2229196545d7,PROD-0027,Persistent demand-driven Graphical User Interface,Apparel,290.24
+ff1611f630b9,PROD-0028,Robust client-server functionalities,Home & Garden,237.9
+5c67ff91b651,PROD-0029,Universal foreground superstructure,Sporting Goods,458.46
+e5b0897fe847,PROD-0030,Monitored impactful capacity,Home & Garden,498.49
+c1ec1f84d61b,PROD-0031,Virtual holistic migration,Sporting Goods,319.22
+9dfb688e46f3,PROD-0032,Realigned bi-directional functionalities,Sporting Goods,484.68
+009da4c25139,PROD-0033,Front-line maximized capability,Sporting Goods,177.24
+d7f53e733ed8,PROD-0034,Future-proofed local encryption,Apparel,163.92
+49ba8e93926a,PROD-0035,Digitized bandwidth-monitored application,Electronics,429.58
+c38a7bcf3a53,PROD-0036,Implemented human-resource pricing structure,Apparel,208.76
+8d4b91272e30,PROD-0037,Operative dynamic complexity,Sporting Goods,147.67
+1a6d32022bb8,PROD-0038,Inverse object-oriented success,Sporting Goods,407.72
+520c845dde88,PROD-0039,Intuitive content-based task-force,Office Supplies,23.17
+27277b752d50,PROD-0040,Diverse modular migration,Electronics,160.69
+a5c6a1018b87,PROD-0041,Persistent modular function,Apparel,62.38
+65179f62f1ab,PROD-0042,Proactive 3rdgeneration array,Sporting Goods,433.13
+78846e412796,PROD-0043,Object-based motivating knowledgebase,Electronics,330.54
+ea01d2f0c612,PROD-0044,Front-line didactic paradigm,Office Supplies,233.68
+999481f026b2,PROD-0045,Multi-channeled actuating application,Electronics,97.85
+1338b20b0557,PROD-0046,Horizontal modular policy,Apparel,313.2
+5dae24f1c6b7,PROD-0047,Streamlined systematic leverage,Sporting Goods,314.58
+5da6f21ae473,PROD-0048,Horizontal national access,Electronics,105.76
+79f6d802ad89,PROD-0049,Customer-focused intermediate challenge,Office Supplies,69.85
+5ac038e72743,PROD-0050,Fundamental upward-trending hierarchy,Apparel,221.87
+e07b1801bfc0,PROD-0051,Virtual impactful hierarchy,Sporting Goods,65.11
+ecad9c574b3a,PROD-0052,Balanced impactful application,Office Supplies,400.66
+a28f10595545,PROD-0053,Re-contextualized next generation core,Home & Garden,158.82
+3b0e4cfdd3b3,PROD-0054,Multi-lateral neutral forecast,Electronics,278.36
+48dda018cffc,PROD-0055,Compatible human-resource middleware,Electronics,116.23
+71421cc4a202,PROD-0056,Organized well-modulated neural-net,Electronics,233.42
+6b95c48aaa47,PROD-0057,Grass-roots regional software,Electronics,325.62
+256894ada995,PROD-0058,Seamless bottom-line capacity,Home & Garden,251.7
+dbd32c932e6d,PROD-0059,Cross-platform hybrid hub,Apparel,256.89
+ed8f14618595,PROD-0060,Mandatory next generation hierarchy,Apparel,210.67
+8e42f5b172db,PROD-0061,Versatile client-server customer loyalty,Sporting Goods,490.22
+b2058f1a72d0,PROD-0062,Robust multimedia initiative,Home & Garden,231.11
+6d2dc4462eaa,PROD-0063,Profit-focused 6thgeneration analyzer,Home & Garden,194.88
+6f0e79b42d19,PROD-0064,Automated client-driven structure,Office Supplies,256.58
+69fc85a67325,PROD-0065,Managed methodical model,Home & Garden,432.69
+76897cfa612c,PROD-0066,Persevering coherent portal,Apparel,387.47
+4394e0c1508d,PROD-0067,Profound client-driven Graphic Interface,Sporting Goods,173.24
+1631ab9ec385,PROD-0068,Seamless foreground complexity,Office Supplies,137.25
+3515c88090a9,PROD-0069,Object-based reciprocal support,Electronics,145.01
+7386f58127f3,PROD-0070,Innovative optimizing Graphical User Interface,Apparel,419.55
+9ddae13c6c7b,PROD-0071,Profit-focused multimedia monitoring,Office Supplies,499.46
+a6fc79df6d60,PROD-0072,Pre-emptive tertiary open system,Sporting Goods,433.3
+db501eba2370,PROD-0073,Innovative methodical adapter,Sporting Goods,271.6
+e953e0378689,PROD-0074,Multi-layered full-range service-desk,Apparel,169.56
+f57d831d5395,PROD-0075,Customizable intangible paradigm,Office Supplies,191.72
+ae0c1ea10474,PROD-0076,Integrated uniform solution,Apparel,435.45
+568111613538,PROD-0077,Self-enabling 4thgeneration policy,Home & Garden,288.04
+779e6b2c55c8,PROD-0078,Phased empowering projection,Home & Garden,428.73
+e1ab9b5c54f9,PROD-0079,Vision-oriented optimal orchestration,Sporting Goods,26.61
+8b52d6236c09,PROD-0080,Focused uniform application,Sporting Goods,354.09
+2c14f3f7e531,PROD-0081,Reduced mission-critical concept,Sporting Goods,196.11
+f33627ed7e64,PROD-0082,Progressive responsive success,Home & Garden,250.19
+c95958b24730,PROD-0083,Secured zero-defect implementation,Electronics,67.49
+37c22120b588,PROD-0084,Digitized systemic encryption,Office Supplies,169.34
+1f25906ddfd2,PROD-0085,Automated object-oriented standardization,Electronics,437.72
+3eb8c47695d0,PROD-0086,Customizable content-based adapter,Sporting Goods,54.36
+7c1d13eeb983,PROD-0087,Organic foreground instruction set,Sporting Goods,12.6
+0020bcef733a,PROD-0088,Distributed incremental solution,Home & Garden,207.94
+78a4b93ce4ff,PROD-0089,Expanded incremental middleware,Home & Garden,42.04
+c3d33a294476,PROD-0090,Vision-oriented reciprocal leverage,Apparel,172.59
+46247c4d886d,PROD-0091,User-centric upward-trending approach,Sporting Goods,326.67
+cfc5524e02f1,PROD-0092,Triple-buffered client-driven model,Apparel,426.91
+dc9a120bf6dc,PROD-0093,Expanded next generation Graphic Interface,Office Supplies,193.1
+3334cbbf5506,PROD-0094,Switchable mission-critical moderator,Apparel,315.27
+fa32c1ea912e,PROD-0095,Multi-tiered foreground conglomeration,Sporting Goods,436.83
+fddf201a65f0,PROD-0096,Persevering national Graphical User Interface,Electronics,310.64
+18d5ef5bc982,PROD-0097,Quality-focused heuristic service-desk,Home & Garden,317.42
+2039b941ed19,PROD-0098,Visionary uniform software,Apparel,498.73
+e932eb52f767,PROD-0099,Stand-alone system-worthy firmware,Electronics,219.82

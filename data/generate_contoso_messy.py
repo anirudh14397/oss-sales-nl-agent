@@ -6,6 +6,20 @@ This is NOT meant to be perfectly clean data — the messiness is the point.
 It's what makes the semantic layer and guardrails in this project meaningful
 rather than decorative.
 
+Spans DATASET_START through DATASET_END (5 calendar years by default).
+fact_sales carries two distinct kinds of messiness, handled at different
+layers:
+- Structural messiness (customer dedup, region hierarchy, late-arriving
+  facts) — handled by marts/ transformations, described in
+  docs/failure_cases.md.
+- Row-level data-quality anomalies (ANOMALY_RATE of rows: null/orphaned
+  foreign keys, negative quantity/revenue, net > gross, plus a small rate of
+  outright duplicate sales_key rows) — deliberately NOT cleaned here. These
+  flow into the warehouse as real bad data and are caught downstream by
+  dbt/models/intermediate/int_fact_sales_validated.sql, which quarantines
+  them into marts/fct_sales_quarantine instead of either silently including
+  them or crashing the build. See docs/failure_cases.md §9.
+
 Output: CSV files under data/seed/, small enough to commit to git.
 
 Usage:
@@ -26,11 +40,20 @@ random.seed(42)
 
 OUT_DIR = Path(__file__).parent / "seed"
 
+DATASET_START = date(2020, 1, 1)
+DATASET_END = date(2024, 12, 31)
+REGION_SPLIT_DATE = date(2024, 7, 1)  # mid-year hierarchy change, in the dataset's final year
+
 REGIONS_V1 = ["North America", "EMEA", "APAC", "LATAM"]
-# Mid-year region hierarchy change: APAC gets split into two sub-regions
+# Region hierarchy change on REGION_SPLIT_DATE: APAC gets split into two sub-regions
 REGIONS_V2 = ["North America", "EMEA", "APAC-North", "APAC-South", "LATAM"]
 
 PRODUCT_CATEGORIES = ["Electronics", "Home & Garden", "Apparel", "Sporting Goods", "Office Supplies"]
+
+# Row-level data-quality anomalies injected into fact_sales — see module
+# docstring. Each anomaly type is roughly equally likely among corrupted rows.
+ANOMALY_RATE = 0.03
+DUPLICATE_KEY_RATE = 0.005
 
 
 def md5_key(*parts: str) -> str:
@@ -104,16 +127,69 @@ def gen_dim_product(n: int) -> list[dict]:
     return rows
 
 
-def gen_dim_region(mid_year_change: bool) -> list[dict]:
-    """Two 'versions' of the region dimension to simulate a hierarchy change mid-year.
-    Rows are timestamped with valid_from so downstream models must handle this explicitly."""
+def gen_dim_region(start: date, split_date: date, mid_year_change: bool) -> list[dict]:
+    """Two 'versions' of the region dimension to simulate a hierarchy change partway
+    through the dataset. Rows are timestamped with valid_from so downstream models
+    must handle this explicitly.
+
+    valid_from for the v1 rows must match the dataset's actual start date, not be
+    hardcoded — otherwise every sale before whatever date is hardcoded here would
+    silently fail the date-range join in marts/fct_sales.sql (a bug this project
+    hit for real when the date range was extended; see docs/failure_cases.md §8/§9
+    for other cases of the same underlying lesson: a workaround that isn't the
+    actual fix stays latent until something exposes it)."""
     rows = []
+    valid_to = (split_date - timedelta(days=1)).isoformat() if mid_year_change else None
     for r in REGIONS_V1:
-        rows.append({"region_key": md5_key("v1", r), "region_name": r, "valid_from": "2024-01-01", "valid_to": "2024-06-30" if mid_year_change else None})
+        rows.append({"region_key": md5_key("v1", r), "region_name": r, "valid_from": start.isoformat(), "valid_to": valid_to})
     if mid_year_change:
         for r in REGIONS_V2:
-            rows.append({"region_key": md5_key("v2", r), "region_name": r, "valid_from": "2024-07-01", "valid_to": None})
+            rows.append({"region_key": md5_key("v2", r), "region_name": r, "valid_from": split_date.isoformat(), "valid_to": None})
     return rows
+
+
+def _corrupt_null_customer_key(row: dict, **_) -> None:
+    row["customer_key"] = None
+
+
+def _corrupt_null_product_key(row: dict, **_) -> None:
+    row["product_key"] = None
+
+
+def _corrupt_orphan_customer_key(row: dict, i: int, **_) -> None:
+    # A fabricated key guaranteed not to exist in dim_customer — simulates a
+    # mistyped ID or a customer record deleted after the sale was recorded.
+    row["customer_key"] = md5_key("orphan-customer", i)
+
+
+def _corrupt_orphan_product_key(row: dict, i: int, **_) -> None:
+    row["product_key"] = md5_key("orphan-product", i)
+
+
+def _corrupt_negative_quantity(row: dict, **_) -> None:
+    row["quantity"] = -abs(row["quantity"])
+
+
+def _corrupt_negative_gross_revenue(row: dict, **_) -> None:
+    row["gross_revenue"] = -abs(row["gross_revenue"])
+
+
+def _corrupt_net_exceeds_gross(row: dict, **_) -> None:
+    # Simulates a returns_amount calculation bug (e.g. a sign error) that lets
+    # net revenue exceed gross — should never happen if returns_amount >= 0.
+    row["returns_amount"] = round(-abs(row["gross_revenue"]) * 0.2, 2)
+    row["net_revenue"] = round(row["gross_revenue"] - row["returns_amount"], 2)
+
+
+ANOMALY_TYPES = [
+    _corrupt_null_customer_key,
+    _corrupt_null_product_key,
+    _corrupt_orphan_customer_key,
+    _corrupt_orphan_product_key,
+    _corrupt_negative_quantity,
+    _corrupt_negative_gross_revenue,
+    _corrupt_net_exceeds_gross,
+]
 
 
 def gen_fact_sales(
@@ -122,6 +198,8 @@ def gen_fact_sales(
     products: list[dict],
     dates: list[dict],
     late_arriving_rate: float = 0.02,
+    anomaly_rate: float = ANOMALY_RATE,
+    duplicate_key_rate: float = DUPLICATE_KEY_RATE,
 ) -> list[dict]:
     rows = []
     for i in range(n):
@@ -139,8 +217,7 @@ def gen_fact_sales(
         is_late = random.random() < late_arriving_rate
         load_date = d["date_key"]
         if is_late:
-            from datetime import date as _date
-            base = _date.fromisoformat(d["date_key"])
+            base = date.fromisoformat(d["date_key"])
             load_date = (base + timedelta(days=random.randint(35, 70))).isoformat()
 
         rows.append({
@@ -154,6 +231,26 @@ def gen_fact_sales(
             "returns_amount": returns_amount,
             "net_revenue": round(gross_amount - returns_amount, 2),
         })
+
+    # Row-level data-quality anomalies — deliberately NOT cleaned here. See
+    # module docstring; caught downstream by int_fact_sales_validated.sql.
+    for i, row in enumerate(rows):
+        if random.random() < anomaly_rate:
+            corrupt = random.choice(ANOMALY_TYPES)
+            corrupt(row, i=i)
+
+    # Duplicate sales_key rows: simulates an ETL replay/reprocessing bug that
+    # re-inserted a record under the same primary key with different values.
+    n_dupes = max(1, int(n * duplicate_key_rate))
+    for _ in range(n_dupes):
+        original = random.choice(rows[:n])  # only duplicate originally-clean keys
+        dupe = dict(original)
+        dupe["quantity"] = random.randint(1, 50)
+        dupe["gross_revenue"] = round(dupe["quantity"] * random.uniform(10, 200), 2)
+        dupe["net_revenue"] = dupe["gross_revenue"]
+        dupe["returns_amount"] = 0
+        rows.append(dupe)  # same sales_key as `original` — the point of this anomaly
+
     return rows
 
 
@@ -190,12 +287,14 @@ def main():
     parser.add_argument("--scale", choices=["small", "medium"], default="small")
     args = parser.parse_args()
 
-    n_customers, n_products, n_sales = (200, 60, 5000) if args.scale == "small" else (2000, 300, 50000)
+    # 5 years of history (DATASET_START..DATASET_END) instead of 1 — volumes
+    # scaled up accordingly, not just left at the old single-year counts.
+    n_customers, n_products, n_sales = (400, 100, 25_000) if args.scale == "small" else (3000, 400, 250_000)
 
-    dates = gen_dim_date(date(2024, 1, 1), date(2024, 12, 31))
+    dates = gen_dim_date(DATASET_START, DATASET_END)
     customers = gen_dim_customer(n_customers)
     products = gen_dim_product(n_products)
-    regions = gen_dim_region(mid_year_change=True)
+    regions = gen_dim_region(DATASET_START, REGION_SPLIT_DATE, mid_year_change=True)
     sales = gen_fact_sales(n_sales, customers, products, dates)
     targets = gen_fact_target(dates, regions)
 
@@ -209,11 +308,16 @@ def main():
     write_csv(sales, "raw_fact_sales")
     write_csv(targets, "raw_fact_target")
 
-    print("\nInjected imperfections to test against:")
+    print(f"\nDataset spans {DATASET_START} through {DATASET_END} ({DATASET_END.year - DATASET_START.year + 1} years).")
+    print("\nStructural messiness (handled in marts/, see docs/failure_cases.md):")
     print("  - duplicate customers under different CUST-IDs (dim_customer)")
     print("  - gross_revenue vs net_revenue distinction (fact_sales)")
     print("  - late-arriving facts: transaction date_key vs load_date differ (fact_sales)")
-    print("  - mid-year region hierarchy change: APAC -> APAC-North/APAC-South (dim_region)")
+    print(f"  - region hierarchy change on {REGION_SPLIT_DATE}: APAC -> APAC-North/APAC-South (dim_region)")
+    print("\nRow-level anomalies, NOT cleaned here — quarantined downstream by")
+    print("dbt/models/intermediate/int_fact_sales_validated.sql (see docs/failure_cases.md §9):")
+    print(f"  - ~{ANOMALY_RATE:.0%} of fact_sales rows: null/orphaned FKs, negative quantity/revenue, net > gross")
+    print(f"  - ~{DUPLICATE_KEY_RATE:.1%} of fact_sales rows: duplicate sales_key (simulated ETL replay)")
 
 
 if __name__ == "__main__":
