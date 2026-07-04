@@ -1,0 +1,29 @@
+version: 2
+
+exposures:
+  - name: sales_qa_agent
+    label: Sales Q&A Agent (Streamlit + LLM orchestration)
+    type: application
+    maturity: medium
+    url: https://github.com/anirudh14397/oss-sales-nl-agent
+    description: >
+      Natural-language sales agent (agent/orchestrator.py) and its Streamlit
+      chat UI (app/streamlit_app.py). Prefers the four certified metrics
+      below via dbt MetricFlow; falls back to a read-only, marts-only
+      exploratory SQL path (agent/sql_explorer.py) for questions no
+      certified metric covers — always labeled unverified, never with
+      certified confidence. See docs/failure_cases.md §6.
+    depends_on:
+      - metric('sales_gross_revenue')
+      - metric('sales_net_revenue')
+      - metric('sales_returns_rate')
+      - metric('sales_target_attainment')
+      - ref('dim_customer')
+      - ref('dim_product')
+      - ref('dim_region')
+      - ref('dim_date')
+      - ref('fct_sales')
+      - ref('fct_target')
+    owner:
+      name: Anirudh Jaiswal
+      email: anirudhjaiswal14@gmail.com
