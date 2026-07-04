@@ -21,3 +21,26 @@ models:
               arguments:
                 to: ref('dim_customer')
                 field: customer_key
+
+  - name: int_fact_sales_validated
+    description: |
+      Classifies every raw sales row against business-logic rules (valid
+      foreign keys, positive quantity, non-negative revenue, net <= gross,
+      unique sales_key) and computes is_valid + a human-readable
+      validation_errors reason. The quarantine pattern in one place: bad
+      rows are neither silently dropped nor allowed to fail the whole build
+      — marts/fct_sales takes only is_valid rows, marts/fct_sales_quarantine
+      takes the rest. See docs/failure_cases.md §9. Intermediate model: not
+      meant for direct consumption.
+      Grain: one row per raw sales_key, including anomalous/duplicate rows.
+    tests:
+      # Internal consistency of the classification itself: exactly one of
+      # (valid, no reason) or (invalid, has a reason) — never both or neither.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(is_valid and validation_errors is null) or (not is_valid and validation_errors is not null)"
+    columns:
+      - name: sales_key
+        tests: [not_null]
+      - name: is_valid
+        tests: [not_null]

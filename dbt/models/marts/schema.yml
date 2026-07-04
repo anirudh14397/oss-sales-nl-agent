@@ -73,11 +73,14 @@ models:
 
   - name: fct_sales
     description: |
-      One row per sales transaction, with customer dedup and date-aware
-      region resolution applied (see docs/failure_cases.md §1-3 for the
-      messiness-handling decisions baked in here). Reported by transaction
-      date_key, not load_date — is_late_arriving flags where they differ.
-      Grain: one row per sales_key.
+      One row per VALID sales transaction, with customer dedup and
+      date-aware region resolution applied (see docs/failure_cases.md §1-3
+      for the messiness-handling decisions baked in here). Reported by
+      transaction date_key, not load_date — is_late_arriving flags where
+      they differ. Rows that failed business-logic validation (bad foreign
+      keys, negative quantity/revenue, duplicate sales_key) are excluded
+      here and land in fct_sales_quarantine instead — see
+      docs/failure_cases.md §9. Grain: one row per sales_key.
     columns:
       - name: sales_key
         tests: [unique, not_null]
@@ -111,6 +114,22 @@ models:
           - accepted_values:
               arguments:
                 values: [true, false]
+
+  - name: fct_sales_quarantine
+    description: |
+      Sales rows that failed one or more business-logic checks in
+      int_fact_sales_validated — bad/missing foreign keys, negative
+      quantity or revenue, net exceeding gross, or a duplicate sales_key.
+      Never included in fct_sales. Meant for review, not reporting — the
+      agent's certified metrics never touch this table; only the
+      exploratory SQL path can query it, and only ever labeled unverified.
+      Grain: one row per invalid raw sales_key.
+    columns:
+      - name: sales_key
+        tests: [not_null]
+      - name: validation_errors
+        description: Human-readable reason(s) this row was quarantined, semicolon-separated if more than one rule failed.
+        tests: [not_null]
 
   - name: fct_target
     description: |

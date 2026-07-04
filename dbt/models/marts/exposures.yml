@@ -24,6 +24,7 @@ exposures:
       - ref('dim_date')
       - ref('fct_sales')
       - ref('fct_target')
+      - ref('fct_sales_quarantine')
     owner:
       name: Anirudh Jaiswal
       email: anirudhjaiswal14@gmail.com

@@ -66,21 +66,24 @@ models:
   - name: stg_fact_sales
     description: |
       Light cleanup of the raw sales fact (cast dates). No business logic —
-      customer dedup and region resolution happen in marts/fct_sales.
-      Grain: one row per sales transaction.
+      customer dedup, region resolution, AND validation/quarantine all
+      happen downstream (marts/fct_sales, int_fact_sales_validated). This
+      model intentionally still carries ~3% row-level anomalies (null/
+      orphaned FKs, negative quantity/revenue, duplicate sales_key) and ~0.5%
+      duplicate sales_key rows — staging is pass-through, not a cleaning
+      step, so no unique/not_null/relationships tests on customer_key,
+      product_key, or sales_key uniqueness belong here; they're enforced
+      (and reconciled into fct_sales vs fct_sales_quarantine) at
+      int_fact_sales_validated instead. See docs/failure_cases.md §9.
+      Grain: one row per raw sales transaction, including anomalous ones.
     columns:
       - name: sales_key
-        tests: [unique, not_null]
-      - name: customer_key
-        description: Raw (not yet deduplicated) customer key.
+        description: Not unique here by design — duplicate sales_key rows are a deliberately injected anomaly, resolved in int_fact_sales_validated.
         tests: [not_null]
+      - name: customer_key
+        description: Raw (not yet deduplicated, not yet validated) customer key. Can be null or reference a nonexistent customer.
       - name: product_key
-        tests:
-          - not_null
-          - relationships:
-              arguments:
-                to: ref('stg_dim_product')
-                field: product_key
+        description: Raw (not yet validated) product key. Can be null or reference a nonexistent product.
       - name: date_key
         description: Transaction date — the period the sale actually happened in.
         tests: [not_null]

@@ -1,4 +1,7 @@
--- Grain: one row per sales transaction (sales_key).
+-- Grain: one row per VALID sales transaction (sales_key). Anomalous and
+-- duplicate rows are quarantined into fct_sales_quarantine instead of
+-- landing here — see int_fact_sales_validated.sql and
+-- docs/failure_cases.md §9.
 --
 -- Messiness handled here:
 -- 1. Customer dedup: raw customer_key is resolved to its canonical customer
@@ -19,11 +22,8 @@
 --    of silently restating history.
 
 with sales as (
-    select * from {{ ref('stg_fact_sales') }}
-),
-
-crosswalk as (
-    select * from {{ ref('int_customer_crosswalk') }}
+    select * from {{ ref('int_fact_sales_validated') }}
+    where is_valid
 ),
 
 customers as (
@@ -33,16 +33,14 @@ customers as (
 sales_with_region_name as (
     select
         s.*,
-        x.canonical_customer_key,
         case
             when s.date_key < date '2024-07-01' then c.region_name_v1
             when c.region_name_v1 = 'APAC' then
-                case when hash(x.canonical_customer_key) % 2 = 0 then 'APAC-North' else 'APAC-South' end
+                case when hash(s.canonical_customer_key) % 2 = 0 then 'APAC-North' else 'APAC-South' end
             else c.region_name_v1
         end as effective_region_name
     from sales s
-    join crosswalk x on s.customer_key = x.customer_key
-    join customers c on x.canonical_customer_key = c.customer_key
+    join customers c on s.canonical_customer_key = c.customer_key
 ),
 
 region as (
