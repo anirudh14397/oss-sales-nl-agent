@@ -33,11 +33,12 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Build dbt star schema + semantic layer
+      - name: Build and test dbt star schema + semantic layer
         working-directory: dbt
         run: |
           DBT_PROFILES_DIR=. dbt seed --full-refresh
           DBT_PROFILES_DIR=. dbt run
+          DBT_PROFILES_DIR=. dbt test
 
       - name: Run eval suite
         env:
