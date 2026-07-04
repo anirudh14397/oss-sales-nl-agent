@@ -5,7 +5,7 @@ models:
     description: |
       Light cleanup of the raw customer seed (trim name, cast signup_date).
       No dedup here — near-duplicate customers (same company, different
-      CUST-ID) are still present. Deduplication happens in marts/customer_crosswalk.
+      CUST-ID) are still present. Deduplication happens in intermediate/int_customer_crosswalk.
       Grain: one row per raw customer_key, including duplicates.
     columns:
       - name: customer_key

@@ -1,10 +1,10 @@
 -- One row per canonical customer, after collapsing near-duplicates via
--- customer_crosswalk. merged_record_count > 1 flags customers where we
+-- int_customer_crosswalk. merged_record_count > 1 flags customers where we
 -- merged more than one raw record — surfaced for transparency, not hidden.
 
 with merge_counts as (
     select canonical_customer_key, count(*) as merged_record_count
-    from {{ ref('customer_crosswalk') }}
+    from {{ ref('int_customer_crosswalk') }}
     group by canonical_customer_key
 )
 

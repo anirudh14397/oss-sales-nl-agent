@@ -1,25 +1,6 @@
 version: 2
 
 models:
-  - name: customer_crosswalk
-    description: |
-      Maps every raw customer_key to its canonical customer_key, collapsing
-      near-duplicate customer records (see docs/failure_cases.md §1 for the
-      matching strategy and its known limitation). Grain: one row per raw
-      customer_key — canonical_customer_key repeats for merged duplicates.
-    columns:
-      - name: customer_key
-        description: Raw customer key (every one that exists in stg_dim_customer, exactly once).
-        tests: [unique, not_null]
-      - name: canonical_customer_key
-        description: The canonical customer_key this raw key resolves to. Not unique — repeats for merged duplicates.
-        tests:
-          - not_null
-          - relationships:
-              arguments:
-                to: ref('dim_customer')
-                field: customer_key
-
   - name: dim_customer
     description: |
       One row per canonical customer, after collapsing near-duplicates via
@@ -65,6 +46,15 @@ models:
       2024-07-01 APAC split). Grain: one row per (region_name, validity
       window) — region_name repeats across the two versions for regions that
       didn't rename (e.g. "North America" has both a pre- and post-split row).
+    tests:
+      # Business-grain check, not just the surrogate key: exactly one row
+      # per (region_name, valid_from). A surrogate-key collision or a bug in
+      # region_key generation wouldn't be caught by testing region_key alone.
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - region_name
+              - valid_from
     columns:
       - name: region_key
         tests: [unique, not_null]
@@ -128,6 +118,17 @@ models:
       the region hierarchy version wasn't yet in effect for that quarter
       (see docs/failure_cases.md §5 — the source data double-counts without
       this filter). Grain: one row per target_key.
+    tests:
+      # Business-grain check: exactly one target per (region_key, year,
+      # quarter). This is the direct test of the anti-double-counting fix in
+      # fct_target.sql — target_key uniqueness alone wouldn't catch a
+      # regression that reintroduced overlapping region-hierarchy versions.
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - region_key
+              - year
+              - quarter
     columns:
       - name: target_key
         tests: [unique, not_null]

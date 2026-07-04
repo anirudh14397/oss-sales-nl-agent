@@ -2,8 +2,8 @@
 --
 -- Messiness handled here:
 -- 1. Customer dedup: raw customer_key is resolved to its canonical customer
---    via customer_crosswalk, so duplicate customer records don't fragment a
---    customer's sales history.
+--    via int_customer_crosswalk, so duplicate customer records don't fragment
+--    a customer's sales history.
 -- 2. Region hierarchy change: the source data ties a *region* only to
 --    fact_target, not to individual sales — a customer's home region
 --    (region_name_v1, fixed at signup under the pre-split hierarchy) is
@@ -23,7 +23,7 @@ with sales as (
 ),
 
 crosswalk as (
-    select * from {{ ref('customer_crosswalk') }}
+    select * from {{ ref('int_customer_crosswalk') }}
 ),
 
 customers as (

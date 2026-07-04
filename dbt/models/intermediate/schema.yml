@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: int_customer_crosswalk
+    description: |
+      Maps every raw customer_key to its canonical customer_key, collapsing
+      near-duplicate customer records (see docs/failure_cases.md §1 for the
+      matching strategy and its known limitation). Grain: one row per raw
+      customer_key — canonical_customer_key repeats for merged duplicates.
+      Intermediate model: not meant for direct consumption, only as input to
+      marts/dim_customer and marts/fct_sales.
+    columns:
+      - name: customer_key
+        description: Raw customer key (every one that exists in stg_dim_customer, exactly once).
+        tests: [unique, not_null]
+      - name: canonical_customer_key
+        description: The canonical customer_key this raw key resolves to. Not unique — repeats for merged duplicates.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_key
