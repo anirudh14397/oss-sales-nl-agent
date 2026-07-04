@@ -1,7 +1,6 @@
 # OSS Sales NL Agent
 
-<!-- Replace YOUR_USERNAME once the repo is pushed to GitHub -->
-[![eval](https://github.com/YOUR_USERNAME/oss-sales-nl-agent/actions/workflows/eval.yml/badge.svg)](https://github.com/YOUR_USERNAME/oss-sales-nl-agent/actions/workflows/eval.yml)
+[![eval](https://github.com/anirudh14397/oss-sales-nl-agent/actions/workflows/eval.yml/badge.svg)](https://github.com/anirudh14397/oss-sales-nl-agent/actions/workflows/eval.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 
@@ -70,7 +69,7 @@ for how each of these is (and isn't) handled downstream.
 ## Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/oss-sales-nl-agent.git
+git clone https://github.com/anirudh14397/oss-sales-nl-agent.git
 cd oss-sales-nl-agent
 conda create -n sales_agent python=3.11 && conda activate sales_agent
 pip install -r requirements.txt
