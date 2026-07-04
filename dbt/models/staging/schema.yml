@@ -1,0 +1,104 @@
+version: 2
+
+models:
+  - name: stg_dim_customer
+    description: |
+      Light cleanup of the raw customer seed (trim name, cast signup_date).
+      No dedup here — near-duplicate customers (same company, different
+      CUST-ID) are still present. Deduplication happens in marts/customer_crosswalk.
+      Grain: one row per raw customer_key, including duplicates.
+    columns:
+      - name: customer_key
+        description: Surrogate key, one per raw customer record (not yet deduplicated).
+        tests: [unique, not_null]
+      - name: customer_id
+        description: "Business key, e.g. CUST-00042."
+        tests: [unique, not_null]
+      - name: segment
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Enterprise", "Mid-Market", "SMB"]
+      - name: region_name_v1
+        description: |
+          Customer's home region, named under the pre-2024-07-01 hierarchy.
+          fct_sales resolves this to the region actually in effect on each
+          sale's transaction date — this column alone doesn't reflect the
+          mid-year APAC split.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["North America", "EMEA", "APAC", "LATAM"]
+
+  - name: stg_dim_product
+    description: "Light cleanup of the raw product seed (trim name). Grain: one row per product."
+    columns:
+      - name: product_key
+        tests: [unique, not_null]
+      - name: category
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Electronics", "Home & Garden", "Apparel", "Sporting Goods", "Office Supplies"]
+
+  - name: stg_dim_region
+    description: |
+      Light cleanup of the raw region seed. Carries both hierarchy versions
+      (pre/post 2024-07-01 APAC split) as separate rows — see
+      dbt/README.md and docs/failure_cases.md §3 for how downstream models
+      resolve which version applies to a given date.
+    columns:
+      - name: region_key
+        description: Surrogate key, one per (region_name, validity window) — not one per region_name.
+        tests: [unique, not_null]
+      - name: region_name
+        tests: [not_null]
+
+  - name: stg_dim_date
+    description: "Light cleanup of the raw date seed. Grain: one row per calendar day."
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+
+  - name: stg_fact_sales
+    description: |
+      Light cleanup of the raw sales fact (cast dates). No business logic —
+      customer dedup and region resolution happen in marts/fct_sales.
+      Grain: one row per sales transaction.
+    columns:
+      - name: sales_key
+        tests: [unique, not_null]
+      - name: customer_key
+        description: Raw (not yet deduplicated) customer key.
+        tests: [not_null]
+      - name: product_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_dim_product')
+                field: product_key
+      - name: date_key
+        description: Transaction date — the period the sale actually happened in.
+        tests: [not_null]
+      - name: load_date
+        description: |
+          When this row landed in the warehouse. Differs from date_key for
+          ~2% of rows (late-arriving facts) — see docs/failure_cases.md §4.
+        tests: [not_null]
+
+  - name: stg_fact_target
+    description: "Light cleanup of the raw target seed. Grain: one row per (region_key, quarter)."
+    columns:
+      - name: target_key
+        tests: [unique, not_null]
+      - name: region_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_dim_region')
+                field: region_key

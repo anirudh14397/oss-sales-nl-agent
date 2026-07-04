@@ -1,0 +1,140 @@
+version: 2
+
+models:
+  - name: customer_crosswalk
+    description: |
+      Maps every raw customer_key to its canonical customer_key, collapsing
+      near-duplicate customer records (see docs/failure_cases.md §1 for the
+      matching strategy and its known limitation). Grain: one row per raw
+      customer_key — canonical_customer_key repeats for merged duplicates.
+    columns:
+      - name: customer_key
+        description: Raw customer key (every one that exists in stg_dim_customer, exactly once).
+        tests: [unique, not_null]
+      - name: canonical_customer_key
+        description: The canonical customer_key this raw key resolves to. Not unique — repeats for merged duplicates.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_key
+
+  - name: dim_customer
+    description: |
+      One row per canonical customer, after collapsing near-duplicates via
+      customer_crosswalk. merged_record_count > 1 flags customers where more
+      than one raw record was merged — surfaced for transparency, not hidden.
+      Grain: one row per canonical customer.
+    columns:
+      - name: customer_key
+        description: Canonical surrogate key (deduplicated).
+        tests: [unique, not_null]
+      - name: segment
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Enterprise", "Mid-Market", "SMB"]
+      - name: region_name_v1
+        description: Home region under the pre-2024-07-01 hierarchy naming — see fct_sales for the resolved, date-aware region.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["North America", "EMEA", "APAC", "LATAM"]
+      - name: merged_record_count
+        description: How many raw customer records were merged into this canonical customer. 1 = no duplicates found.
+        tests: [not_null]
+
+  - name: dim_product
+    description: "Passthrough of stg_dim_product. Grain: one row per product."
+    columns:
+      - name: product_key
+        tests: [unique, not_null]
+      - name: category
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Electronics", "Home & Garden", "Apparel", "Sporting Goods", "Office Supplies"]
+
+  - name: dim_region
+    description: |
+      Passthrough SCD2 of both region hierarchy versions (pre/post the
+      2024-07-01 APAC split). Grain: one row per (region_name, validity
+      window) — region_name repeats across the two versions for regions that
+      didn't rename (e.g. "North America" has both a pre- and post-split row).
+    columns:
+      - name: region_key
+        tests: [unique, not_null]
+      - name: region_name
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["North America", "EMEA", "APAC", "LATAM", "APAC-North", "APAC-South"]
+
+  - name: dim_date
+    description: "Passthrough of stg_dim_date. Grain: one row per calendar day."
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+
+  - name: fct_sales
+    description: |
+      One row per sales transaction, with customer dedup and date-aware
+      region resolution applied (see docs/failure_cases.md §1-3 for the
+      messiness-handling decisions baked in here). Reported by transaction
+      date_key, not load_date — is_late_arriving flags where they differ.
+      Grain: one row per sales_key.
+    columns:
+      - name: sales_key
+        tests: [unique, not_null]
+      - name: customer_key
+        description: Canonical (deduplicated) customer key.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_key
+      - name: product_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_key
+      - name: region_key
+        description: Resolved as of the sale's transaction date — see model SQL for the APAC-split logic.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_region')
+                field: region_key
+      - name: is_late_arriving
+        description: True when load_date differs from the transaction date_key (~2% of rows).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+  - name: fct_target
+    description: |
+      One row per (region_key, quarter) target, filtered to drop rows where
+      the region hierarchy version wasn't yet in effect for that quarter
+      (see docs/failure_cases.md §5 — the source data double-counts without
+      this filter). Grain: one row per target_key.
+    columns:
+      - name: target_key
+        tests: [unique, not_null]
+      - name: region_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_region')
+                field: region_key

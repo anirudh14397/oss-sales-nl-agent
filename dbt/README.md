@@ -11,8 +11,9 @@ reasoning behind each). Metrics are defined in
 
 ```bash
 cd dbt
-DBT_PROFILES_DIR=. dbt seed --full-refresh   # load data/seed/*.csv
+DBT_PROFILES_DIR=. dbt seed --full-refresh   # load data/seed/raw_*.csv
 DBT_PROFILES_DIR=. dbt run                   # build staging + marts
+DBT_PROFILES_DIR=. dbt test                  # schema tests: unique/not_null/relationships/accepted_values
 DBT_PROFILES_DIR=. dbt parse                 # validate semantic model / metric config
 DBT_PROFILES_DIR=. mf list metrics           # list certified metrics + dimensions
 DBT_PROFILES_DIR=. DBT_TARGET=agent mf query --metrics sales_net_revenue
@@ -21,6 +22,11 @@ DBT_PROFILES_DIR=. DBT_TARGET=agent mf query --metrics sales_net_revenue
 `profiles.yml` defines two targets: `dev` (read-write, for `dbt run`/`dbt
 seed`) and `agent` (read-only — the one `agent/metrics_client.py` uses at
 query time).
+
+Seed CSVs are named `raw_*` (`raw_dim_customer.csv`, etc.) so the seed node
+never collides with the mart model of the (near-)same name — see
+`docs/failure_cases.md` §8. Schema documentation and tests live in
+`models/staging/schema.yml` and `models/marts/schema.yml`.
 
 ## Certified metrics
 

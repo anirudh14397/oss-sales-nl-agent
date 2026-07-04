@@ -1,10 +1,14 @@
 models:
   - name: metricflow_time_spine
+    description: |
+      Required by dbt's semantic layer for time-grain aggregation (quarter
+      grouping, period comparisons). One row per calendar day.
     time_spine:
       standard_granularity_column: date_day
     columns:
       - name: date_day
         granularity: day
+        tests: [unique, not_null]
 
 semantic_models:
   - name: sem_fct_sales
