@@ -1,0 +1,15 @@
+sales_agent:
+  target: "{{ env_var('DBT_TARGET', 'dev') }}"
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DBT_DUCKDB_PATH', '../warehouse.duckdb') }}"
+      threads: 4
+    # Used exclusively by agent/metrics_client.py at query time. Read-only,
+    # full stop (CLAUDE.md hard design rule #4) — the agent must never be
+    # able to write to the warehouse, even by accident.
+    agent:
+      type: duckdb
+      path: "{{ env_var('DBT_DUCKDB_PATH', '../warehouse.duckdb') }}"
+      threads: 4
+      read_only: true
