@@ -11,4 +11,4 @@ select
     gross_revenue,
     returns_amount,
     net_revenue
-from {{ ref('fact_sales') }}
+from {{ ref('raw_fact_sales') }}

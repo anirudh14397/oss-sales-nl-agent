@@ -8,4 +8,4 @@ select
     region_name,
     cast(valid_from as date) as valid_from,
     cast(valid_to as date) as valid_to
-from {{ ref('dim_region') }}
+from {{ ref('raw_dim_region') }}

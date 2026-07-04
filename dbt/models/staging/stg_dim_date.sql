@@ -8,4 +8,4 @@ select
     month_name,
     day,
     fiscal_year
-from {{ ref('dim_date') }}
+from {{ ref('raw_dim_date') }}

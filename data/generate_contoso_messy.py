@@ -199,12 +199,15 @@ def main():
     sales = gen_fact_sales(n_sales, customers, products, dates)
     targets = gen_fact_target(dates, regions)
 
-    write_csv(dates, "dim_date")
-    write_csv(customers, "dim_customer")
-    write_csv(products, "dim_product")
-    write_csv(regions, "dim_region")
-    write_csv(sales, "fact_sales")
-    write_csv(targets, "fact_target")
+    # Prefixed raw_ so these seed node names never collide with the dbt mart
+    # models of the same conceptual name (dbt resource names are global —
+    # a seed and a model can't share one without ambiguous ref() resolution).
+    write_csv(dates, "raw_dim_date")
+    write_csv(customers, "raw_dim_customer")
+    write_csv(products, "raw_dim_product")
+    write_csv(regions, "raw_dim_region")
+    write_csv(sales, "raw_fact_sales")
+    write_csv(targets, "raw_fact_target")
 
     print("\nInjected imperfections to test against:")
     print("  - duplicate customers under different CUST-IDs (dim_customer)")

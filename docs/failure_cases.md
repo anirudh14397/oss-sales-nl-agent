@@ -162,6 +162,27 @@ triggering that pre-check when neither qualifier is present; `call_metric`
 can now also be invoked more than once per turn so a genuine comparison
 question gets both figures back in one answer instead of one at a time.
 
+## 8. Seed/model name collision — masked by a workaround, not actually fixed, until it blocked schema.yml
+
+From early in the build, dbt emitted a recurring warning: `dim_customer`,
+`dim_product`, `dim_region`, and `dim_date` existed as both a seed (the raw
+CSV) and a mart model (the cleaned/deduplicated version) — same name, two
+different resources. `dbt_project.yml`'s `+schema: raw` config for seeds
+worked around the *physical* relation collision (they land in different
+DuckDB schemas), but the *node name* collision remained latent.
+
+It stayed harmless until schema.yml documentation was added for the mart
+models: dbt's `models:` section resolved `dim_customer` to the seed instead
+of the mart model, warning that the seed should be documented under `seeds:`
+instead. Adding real tests forced the actual fix rather than another
+workaround: seed files (and the generator that writes them) were renamed
+with a `raw_` prefix (`raw_dim_customer.csv`, etc.), and every staging
+model's `ref()` updated to match. Node names are now unambiguous — one
+resource per name, full stop.
+
+**Lesson**: a warning that doesn't block anything is still a real problem;
+it just hasn't found the thing it blocks yet.
+
 ## Eval results
 
 `eval/questions.yaml` + `eval/run_eval.py` exercise the live agent (real Groq

@@ -8,4 +8,4 @@ select
     segment,
     region_name_v1,
     cast(signup_date as date) as signup_date
-from {{ ref('dim_customer') }}
+from {{ ref('raw_dim_customer') }}

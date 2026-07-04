@@ -6,4 +6,4 @@ select
     year,
     quarter,
     target_revenue
-from {{ ref('fact_target') }}
+from {{ ref('raw_fact_target') }}
