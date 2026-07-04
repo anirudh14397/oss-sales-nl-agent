@@ -1,0 +1,17 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/
+
+# DuckDB warehouse + dbt artifacts (regenerate with data/generate_contoso_messy.py + dbt build)
+*.duckdb
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/.user.yml
+
+.DS_Store
+
+# Local Claude Code session state — not part of the project
+.claude/
