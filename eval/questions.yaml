@@ -1,0 +1,40 @@
+# Eval set for the sales NL agent.
+# expected_behavior: "answer" | "clarify" | "refuse"
+# For "answer" cases, expected_metric documents which certified metric should be called —
+# this is what makes the eval meaningful (are we hitting the RIGHT metric, not just A number).
+
+- question: "What was our net revenue last quarter?"
+  expected_behavior: answer
+  expected_metric: sales_net_revenue
+
+- question: "What was our revenue last quarter?"
+  expected_behavior: clarify
+  note: "Ambiguous: gross vs net revenue. Agent should ask which one, not assume."
+
+- question: "How are we tracking against target in APAC this year?"
+  expected_behavior: clarify
+  note: "APAC hierarchy changed mid-year (APAC-North/APAC-South). Agent should flag this."
+
+- question: "Which product category had the highest returns rate in Q2?"
+  expected_behavior: answer
+  expected_metric: sales_returns_rate
+
+- question: "What's our total headcount?"
+  expected_behavior: refuse
+  note: "Not a sales metric — no such data in this warehouse. Agent should say so, not hallucinate."
+
+- question: "Show me revenue by customer for CUST-00042"
+  expected_behavior: answer
+  expected_metric: sales_net_revenue
+
+- question: "What will Q1 next year's revenue be?"
+  expected_behavior: refuse
+  note: "Forecasting is out of scope for this agent — it answers from historical certified metrics only."
+
+- question: "How many distinct customers do we have in the Enterprise segment?"
+  expected_behavior: exploratory
+  note: "No certified metric covers customer counts — this should fall through to the exploratory SQL path against the marts schema, clearly labeled as unverified, not answered as if it were certified."
+
+- question: "List the product categories we sell."
+  expected_behavior: exploratory
+  note: "A simple lookup with no certified metric backing it — same exploratory path as above."
