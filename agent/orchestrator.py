@@ -68,15 +68,17 @@ load_dotenv()
 
 GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
-# This dataset only ever covers calendar year 2024 — giving the LLM a fixed
-# anchor lets it resolve relative time phrases ("last quarter", "this year")
-# deterministically instead of guessing against a real-world "today".
+# This dataset only ever covers 2020-01-01 through 2024-12-31 — giving the
+# LLM a fixed anchor lets it resolve relative time phrases ("last quarter",
+# "this year", "last year") deterministically instead of guessing against a
+# real-world "today". 2024 is treated as the most recent/current year.
 DATASET_ANCHOR = (
-    "This warehouse contains sales data for calendar year 2024 only "
-    "(2024-01-01 through 2024-12-31). Resolve relative time phrases against "
-    "that fixed window: 'last quarter' = Q4 2024 (metric_time__quarter = "
-    "'2024-10-01'), 'this year' = all of 2024, 'Q2' = '2024-04-01', etc., "
-    "unless the user names a different period."
+    "This warehouse contains sales data for 2020-01-01 through 2024-12-31 "
+    "(5 years). Treat 2024 as the current year. Resolve relative time "
+    "phrases against that fixed window: 'last quarter' = Q4 2024 "
+    "(metric_time__quarter = '2024-10-01'), 'this year' = all of 2024, "
+    "'last year' = all of 2023, 'Q2 2022' = '2022-04-01', etc., unless the "
+    "user names a different period."
 )
 
 REGION_HIERARCHY_NOTE = (

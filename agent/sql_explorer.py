@@ -32,7 +32,14 @@ from sqlglot import exp
 DB_PATH = Path(__file__).resolve().parent.parent / "warehouse.duckdb"
 
 # The curated, documented marts — never the raw main_raw seed tables.
-ALLOWED_TABLES = {"dim_customer", "dim_product", "dim_region", "dim_date", "fct_sales", "fct_target"}
+# fct_sales_quarantine is included deliberately: it lets the agent answer
+# data-quality questions ("how much of our sales data failed validation and
+# why") without needing a certified metric for that — still always labeled
+# exploratory, never presented as a certified figure.
+ALLOWED_TABLES = {
+    "dim_customer", "dim_product", "dim_region", "dim_date",
+    "fct_sales", "fct_target", "fct_sales_quarantine",
+}
 
 MAX_EXPLORE_ROWS = 200
 QUERY_TIMEOUT_SECONDS = 10
