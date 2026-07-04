@@ -13,5 +13,7 @@ dbt/.user.yml
 
 .DS_Store
 
-# Local Claude Code session state — not part of the project
-.claude/
+# Local Claude Code session state — not part of the project (but .claude/skills/
+# IS committed — those are reusable project skills, not transient state)
+.claude/scheduled_tasks.lock
+.claude/*.log
