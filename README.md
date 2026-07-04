@@ -55,13 +55,24 @@ Two trust tiers, always visibly distinguished:
 
 ## Data
 
-Synthetic Contoso-style retail sales data, generated with deliberate
-imperfections to stress-test the semantic layer and guardrails:
+Synthetic Contoso-style retail sales data spanning 5 years (2020-01-01
+through 2024-12-31, ~25k sales transactions at the default scale), generated
+with deliberate imperfections to stress-test the semantic layer and
+guardrails — two different kinds, handled at two different layers:
+
+**Structural messiness** (handled by transformations in `dbt/models/marts/`):
 - Duplicate customer records under slightly different IDs
 - A `revenue` vs `net_revenue` distinction with genuinely different logic
 - A late-arriving fact batch (records that "show up" a period late)
-- A region hierarchy that changes mid-year (APAC splits into
+- A region hierarchy that changes mid-dataset (APAC splits into
   APAC-North/APAC-South on 2024-07-01)
+
+**Row-level anomalies** (deliberately left uncleaned, ~3% of sales rows —
+caught by an explicit validate → quarantine step, not silently dropped or
+allowed to fail the build): null/orphaned foreign keys, negative quantity or
+revenue, net exceeding gross, and duplicate transaction IDs. Rows that fail
+validation land in `fct_sales_quarantine` with a specific reason, never in
+`fct_sales` — see [docs/failure_cases.md](docs/failure_cases.md) §9.
 
 See `data/generate_contoso_messy.py` and [docs/failure_cases.md](docs/failure_cases.md)
 for how each of these is (and isn't) handled downstream.
@@ -134,8 +145,9 @@ secret to pass.
 - [x] dbt star schema + MetricFlow semantic layer
 - [x] Agent orchestration + guardrails (multi-turn, certified + exploratory tiers)
 - [x] Streamlit UI
-- [x] Eval harness (9 leadership questions, 9/9 passing) + CI
+- [x] Eval harness (9 leadership questions) + CI — see docs/failure_cases.md for current pass status
 - [x] Failure case writeup (docs/failure_cases.md)
+- [x] 5-year dataset + row-level anomaly quarantine pattern (docs/failure_cases.md §9)
 
 ## License
 

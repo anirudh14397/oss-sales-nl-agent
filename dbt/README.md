@@ -1,14 +1,23 @@
 # dbt semantic layer
 
-Three-layer project structure:
-- `models/staging/` — light cleanup only (trim, cast), no business logic
+Five years of synthetic sales data (2020-01-01 through 2024-12-31). Three-layer
+project structure:
+- `models/staging/` — light cleanup only (trim, cast), no business logic.
+  `stg_fact_sales` intentionally still carries row-level anomalies (null/
+  orphaned FKs, negative quantity/revenue, duplicate sales_key) — staging is
+  pass-through, not a cleaning step.
 - `models/intermediate/` — multi-step transformations not meant for direct
-  consumption (currently just `int_customer_crosswalk`, the dedup mapping)
+  consumption: `int_customer_crosswalk` (dedup mapping) and
+  `int_fact_sales_validated` (business-rule validation — computes `is_valid`
+  + a `validation_errors` reason for every raw sales row).
 - `models/marts/` — consumption-ready star schema (customer dedup, region
   hierarchy resolution, target overlap fix baked in; see
   [../docs/failure_cases.md](../docs/failure_cases.md) for the reasoning
   behind each), plus the semantic layer (`_semantic_models.yml`) and
   `exposures.yml` declaring the agent/Streamlit app as a consumer.
+  `fct_sales` contains only validated rows; `fct_sales_quarantine` holds
+  everything that failed validation, with the reason — the quarantine
+  pattern, see docs/failure_cases.md §9.
 
 Metrics are defined using dbt's `semantic_models` and `metrics` config,
 queried via dbt MetricFlow (`mf query`).
@@ -53,3 +62,8 @@ alone would miss, e.g. the region-hierarchy double-counting bug fixed in
 layer as base metrics backing the two ratio metrics above — they're not
 part of the certified set the agent is allowed to call directly (see
 `agent/metrics_client.py::CERTIFIED_METRICS`).
+
+`fct_sales_quarantine` isn't a certified metric source, but is reachable
+through the agent's exploratory SQL path (`agent/sql_explorer.py`) for
+data-quality questions ("how much sales data failed validation, and why") —
+always labeled unverified, same as any other exploratory answer.

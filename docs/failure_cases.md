@@ -183,12 +183,76 @@ resource per name, full stop.
 **Lesson**: a warning that doesn't block anything is still a real problem;
 it just hasn't found the thing it blocks yet.
 
+## 9. Five years of data, row-level anomalies, and the quarantine pattern
+
+The dataset originally spanned one calendar year (2024). Extending it to
+five years (2020-2024) and injecting realistic row-level data-quality
+anomalies (not just the structural messiness above) surfaced one real bug
+and required one new architectural pattern.
+
+**Bug found**: `gen_dim_region`'s pre-split region rows had `valid_from`
+hardcoded to `"2024-01-01"`. With data now starting in 2020, every sale
+before 2024 would have silently vanished from `fct_sales` — the join
+`s.date_key >= r.valid_from` would fail for all of them, and an inner join
+just drops non-matches, no error, no warning. Fixed by parametrizing
+`valid_from` to the actual dataset start date instead of a hardcoded
+literal. The same class of bug as §8: a hardcoded assumption that happened
+to be true for the data that existed at the time, silently wrong once the
+data changed.
+
+**Anomalies injected** (`ANOMALY_RATE` = 3% of `fact_sales` rows, plus a
+separate 0.5% duplicate-key rate): null customer_key/product_key, orphaned
+customer_key/product_key (references a record that doesn't exist), negative
+quantity, negative gross_revenue, net_revenue exceeding gross_revenue, and
+outright duplicate sales_key rows (simulating an ETL replay bug). These are
+deliberately **not** cleaned in the generator or in staging — staging stays
+pass-through by convention (see `models/staging/schema.yml`'s
+`stg_fact_sales` entry, which had its `not_null`/`unique`/`relationships`
+tests removed for exactly this reason: those tests were correct when the
+data was clean, and became false failures once real anomalies were
+introduced at that layer on purpose).
+
+**Handling — the quarantine pattern**: `dbt/models/intermediate/int_fact_sales_validated.sql`
+classifies every raw sales row against the business rules above and computes
+`is_valid` + a human-readable `validation_errors` reason. This is NOT the
+same as a `dbt test` (which only gates the build pass/fail after the fact)
+and NOT the same as an inner join (which drops bad rows invisibly). It's a
+third thing: bad rows are routed to `marts/fct_sales_quarantine` — visible,
+queryable, with a reason attached — while `marts/fct_sales` only ever
+contains rows that passed every check. A singular test
+(`tests/assert_fact_sales_rows_fully_accounted_for.sql`) proves the
+reconciliation property directly: every raw row lands in exactly one of the
+two tables, never both, never neither.
+
+`fct_sales_quarantine` is also reachable through the agent's exploratory SQL
+path (`agent/sql_explorer.py`), so questions like "how much of our sales
+data failed validation and why" are answerable — still labeled unverified,
+same as any other exploratory answer, but a real capability this project
+didn't have before.
+
+**Known limitation**: the duplicate-sales_key resolution
+(`row_number() over (partition by sales_key order by load_date)`) keeps
+exactly one row per duplicated key and quarantines the rest, picking
+whichever has the earliest load_date. That's a reasonable default (earliest
+load = likely the original), not a verified-correct one — there's no
+source-of-truth signal in this synthetic data to confirm which of the
+duplicates is "real."
+
 ## Eval results
 
 `eval/questions.yaml` + `eval/run_eval.py` exercise the live agent (real Groq
 call, real DuckDB warehouse) against 9 leadership questions covering each of
-the above. Current status: 9/9 passing, re-verified across multiple runs to
-rule out LLM non-determinism.
+the above. As of the pre-§9 data (single year, no anomalies), 9/9 passing,
+re-verified across multiple runs to rule out LLM non-determinism.
+
+After extending to 5 years + anomalies (§9), only 3/9 were re-verified live
+before hitting Groq's free-tier daily token limit (100,000/100,000 used) —
+the 3 that ran passed, including the ones exercising `DATASET_ANCHOR`'s
+updated date range ("last quarter", "this year"). The dbt-level
+verification (69/69 schema tests, the row-reconciliation singular test, and
+manual spot-checks of `fct_sales`/`fct_sales_quarantine` contents) is
+complete and doesn't depend on Groq quota; the full live eval re-run is
+pending the next quota window.
 
 One operational note surfaced during testing: Groq's Llama 3.3 70B
 occasionally emits a malformed function-call payload (`tool_use_failed`) —
