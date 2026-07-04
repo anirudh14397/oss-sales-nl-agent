@@ -36,6 +36,7 @@ jobs:
       - name: Build and test dbt star schema + semantic layer
         working-directory: dbt
         run: |
+          DBT_PROFILES_DIR=. dbt deps
           DBT_PROFILES_DIR=. dbt seed --full-refresh
           DBT_PROFILES_DIR=. dbt run
           DBT_PROFILES_DIR=. dbt test
